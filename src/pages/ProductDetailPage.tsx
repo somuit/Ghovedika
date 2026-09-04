@@ -18,7 +18,7 @@ export const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
   useLiveDatabase(); // Auto re-render live database updates on customer screen
 
-  const product = dbService.getProductBySlug(slug || '') || dbService.getProducts()[0];
+  const product = dbService.getProductBySlug(slug || '') || dbService.getProducts().find(p => p.id === slug) || dbService.getProducts()[0];
   const category = dbService.getCategories().find(c => c.id === product?.categoryId);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string>(() => {
