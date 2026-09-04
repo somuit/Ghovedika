@@ -245,17 +245,19 @@ export const AdminSettings: React.FC = () => {
               />
             </div>
 
-            <div className="sm:col-span-2 flex gap-6 pt-2">
-              <label className="flex items-center gap-2 font-bold text-gray-800 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.isCODEnabled}
-                  onChange={(e) => setSettings({ ...settings, isCODEnabled: e.target.checked })}
-                  className="rounded text-brand-500 w-4 h-4"
-                />
-                <span>Enable Cash on Delivery (COD)</span>
-              </label>
+            <div className="sm:col-span-2">
+              <label className="font-bold text-gray-700 block mb-1">Razorpay Key ID (e.g. rzp_live_... or rzp_test_...)</label>
+              <input
+                type="text"
+                value={settings.razorpayKeyId || ''}
+                onChange={(e) => setSettings({ ...settings, razorpayKeyId: e.target.value })}
+                placeholder="rzp_test_TUK52yasX9ouWT"
+                className="w-full p-2.5 border rounded-xl font-mono text-xs"
+              />
+              <p className="text-[10px] text-gray-500 mt-1">Found in your Razorpay Dashboard &gt; Settings &gt; API Keys.</p>
+            </div>
 
+            <div className="sm:col-span-2 flex gap-6 pt-2">
               <label className="flex items-center gap-2 font-bold text-gray-800 cursor-pointer">
                 <input
                   type="checkbox"

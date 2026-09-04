@@ -47,6 +47,28 @@ export const CheckoutPage: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Dynamically load Razorpay SDK if not yet available
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof (window as any).Razorpay !== 'undefined') {
+        resolve(true);
+        return;
+      }
+      const existingScript = document.querySelector('script[src*="razorpay"]');
+      if (existingScript) {
+        existingScript.addEventListener('load', () => resolve(true));
+        existingScript.addEventListener('error', () => resolve(false));
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   // Helper to finalize order creation in DB & redirect
   const completeOrderCreation = (pMethod: PaymentMethod, pStatus: 'paid' | 'pending', razorpayPaymentId?: string) => {
     const order = dbService.createOrder({
@@ -69,7 +91,7 @@ export const CheckoutPage: React.FC = () => {
       discountAmount: couponDiscount,
       couponCode: appliedCoupon?.code,
       totalAmount,
-      paymentMethod: pMethod,
+      paymentMethod: 'Razorpay',
       paymentStatus: pStatus,
       orderStatus: 'placed',
       internalNotes: razorpayPaymentId ? `Razorpay Payment ID: ${razorpayPaymentId}` : undefined,
@@ -79,76 +101,72 @@ export const CheckoutPage: React.FC = () => {
     navigate(`/order-confirmation/${order.id}`);
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
-    // Validation
+    // Mandatory Field Validation
     if (!formData.fullName.trim() || !formData.phone.trim() || !formData.addressLine.trim() || !formData.pincode.trim()) {
       setErrorMsg(t('దయచేసి తప్పనిసరి వివరాలన్నీ భర్తీ చేయండి.', 'Please fill in all mandatory address fields.'));
       return;
     }
 
-    if (formData.phone.length < 10) {
+    const cleanedPhone = formData.phone.replace(/\D/g, '');
+    if (cleanedPhone.length < 10) {
       setErrorMsg(t('దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ నమోదు చేయండి.', 'Please enter a valid 10-digit mobile number.'));
       return;
     }
 
     setIsSubmitting(true);
 
-    if (paymentMethod === 'COD') {
-      completeOrderCreation('COD', 'pending');
+    // Pay Now Online via Razorpay
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || typeof (window as any).Razorpay === 'undefined') {
       setIsSubmitting(false);
+      setErrorMsg(t('Razorpay చెల్లింపు గేట్‌వే లోడ్ అవ్వలేదు. దయచేసి మీ ఇంటర్నెట్‌ను సరిచూసి మళ్ళీ ప్రయత్నించండి.', 'Unable to load Razorpay SDK. Please check your internet connection and retry.'));
       return;
     }
 
-    // Pay Now Online via Razorpay
-    if (typeof (window as any).Razorpay !== 'undefined') {
-      try {
-        const options = {
-          key: razorpayKeyId,
-          amount: Math.round(totalAmount * 100), // in paise
-          currency: 'INR',
-          name: 'Ghovedika | గోవేదిక',
-          description: `Order Payment for ${cartItems.length} items`,
-          image: settings.logoUrl || '/logo.png',
-          prefill: {
-            name: formData.fullName,
-            contact: formData.phone,
-            email: formData.email || 'customer@ghovedika.store',
-          },
-          theme: {
-            color: '#1E4D2B',
-          },
-          handler: function (response: any) {
-            const payId = response.razorpay_payment_id || `pay_${Date.now()}`;
-            completeOrderCreation('Razorpay', 'paid', payId);
-            setIsSubmitting(false);
-          },
-          modal: {
-            ondismiss: function () {
-              setIsSubmitting(false);
-              setErrorMsg(t('చెల్లింపు రద్దు చేయబడింది. మళ్ళీ ప్రయత్నించండి.', 'Payment window was closed. You can retry Pay Now or choose COD.'));
-            }
-          }
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on('payment.failed', function (response: any) {
+    try {
+      const options = {
+        key: razorpayKeyId,
+        amount: Math.round(totalAmount * 100), // in paise
+        currency: 'INR',
+        name: settings.websiteName || 'Ghovedika | గోవేదిక',
+        description: `Order Payment for ${cartItems.length} items`,
+        image: settings.logoUrl || '/logo.png',
+        prefill: {
+          name: formData.fullName.trim(),
+          contact: cleanedPhone.slice(-10),
+          email: formData.email.trim() || 'customer@ghovedika.store',
+        },
+        theme: {
+          color: '#1E4D2B',
+        },
+        handler: function (response: any) {
+          const payId = response.razorpay_payment_id || `pay_${Date.now()}`;
+          completeOrderCreation('Razorpay', 'paid', payId);
           setIsSubmitting(false);
-          setErrorMsg(`Payment failed: ${response.error?.description || 'Transaction declined'}`);
-        });
-        rzp.open();
-      } catch (err) {
-        console.error('Razorpay popup error:', err);
-        // Fallback simulation for test environment
-        completeOrderCreation('Razorpay', 'paid', `rzp_test_pay_${Date.now()}`);
+        },
+        modal: {
+          ondismiss: function () {
+            setIsSubmitting(false);
+            setErrorMsg(t('చెల్లింపు ప్రక్రియ రద్దు చేయబడింది. చెల్లించడానికి మళ్ళీ బటన్ నొక్కండి.', 'Payment window closed. Click Pay Now to try again.'));
+          }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
         setIsSubmitting(false);
-      }
-    } else {
-      // Fallback if script load delayed
-      completeOrderCreation('Razorpay', 'paid', `rzp_test_pay_${Date.now()}`);
+        const desc = response.error?.description || response.error?.reason || 'Transaction declined';
+        setErrorMsg(t(`చెల్లింపు విఫలమైంది: ${desc}`, `Payment failed: ${desc}`));
+      });
+      rzp.open();
+    } catch (err: any) {
+      console.error('Razorpay popup error:', err);
       setIsSubmitting(false);
+      setErrorMsg(t('Razorpay తెరిచేటప్పుడు పొరపాటు జరిగింది. మళ్ళీ ప్రయత్నించండి.', 'Error opening payment options. Please try again.'));
     }
   };
 
@@ -303,61 +321,23 @@ export const CheckoutPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Payment Method Selection */}
+          {/* Payment Method Selection - Online Only */}
           <div className="bg-white p-6 rounded-2xl border border-brand-100 shadow-card space-y-4">
             <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-brand-500" />
-              <span>{t('చెల్లింపు విధానం ఎంచుకోండి', 'Select Payment Method')}</span>
+              <span>{t('చెల్లింపు విధానం (Online Payment)', 'Payment Method (Online Only)')}</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
-              {/* Pay Now (Razorpay Online) */}
-              <label className={`p-4 rounded-xl border-2 cursor-pointer flex items-start gap-3 transition ${
-                paymentMethod === 'Razorpay' ? 'border-brand-500 bg-brand-50/50 shadow' : 'border-gray-200 hover:border-gray-300'
-              }`}>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="Razorpay"
-                  checked={paymentMethod === 'Razorpay'}
-                  onChange={() => setPaymentMethod('Razorpay')}
-                  className="mt-1 text-brand-500"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-500 fill-current" />
-                    <span className="font-bold text-sm text-gray-900">Pay Now (ఇప్పుడు చెల్లించండి)</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t('UPI / GPay / PhonePe / Cards / Net Banking', 'Instant Online Payment via UPI, GPay, PhonePe, Cards & NetBanking.')}
-                  </p>
+            <div className="p-4 rounded-xl border-2 border-brand-500 bg-brand-50/50 shadow flex items-start gap-3">
+              <Zap className="w-5 h-5 text-amber-500 fill-current mt-0.5 shrink-0" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-sm text-gray-900">Online Pay Now (Razorpay Secure Checkout)</span>
                 </div>
-              </label>
-
-              {/* COD */}
-              <label className={`p-4 rounded-xl border-2 cursor-pointer flex items-start gap-3 transition ${
-                paymentMethod === 'COD' ? 'border-brand-500 bg-brand-50/50 shadow' : 'border-gray-200 hover:border-gray-300'
-              }`}>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="COD"
-                  checked={paymentMethod === 'COD'}
-                  onChange={() => setPaymentMethod('COD')}
-                  className="mt-1 text-brand-500"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Banknote className="w-4 h-4 text-emerald-600" />
-                    <span className="font-bold text-sm text-gray-900">Cash on Delivery (COD)</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t('డెలివరీ అందాక నగదు చెల్లించండి', 'Pay cash directly at the time of delivery.')}
-                  </p>
-                </div>
-              </label>
-
+                <p className="text-xs text-gray-600 mt-1">
+                  {t('UPI (GPay / PhonePe / Paytm / BHIM), క్రెడిట్/డెబిట్ కార్డులు మరియు నెట్ బ్యాంకింగ్ ద్వారా తక్షణ సురక్షిత చెల్లింపు.', 'Instant & secure checkout supporting UPI (GPay, PhonePe, Paytm), Debit/Credit Cards & NetBanking.')}
+                </p>
+              </div>
             </div>
 
             {/* Just-In-Time Privacy Notice & Optional Marketing Consent */}
@@ -440,27 +420,14 @@ export const CheckoutPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-4 font-extrabold rounded-xl shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50 text-white ${
-                paymentMethod === 'Razorpay' 
-                  ? 'bg-amber-600 hover:bg-amber-700 ring-2 ring-amber-400' 
-                  : 'bg-brand-500 hover:bg-brand-600'
-              }`}
+              className="w-full py-4 font-extrabold rounded-xl shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50 text-white bg-amber-600 hover:bg-amber-700 ring-2 ring-amber-400 cursor-pointer"
             >
               {isSubmitting ? (
-                <span>{t('ఆర్డర్ ప్రాసెస్ అవుతోంది...', 'Processing Order...')}</span>
+                <span>{t('చెల్లింపు గేట్‌వే తెరుచుకుంటోంది...', 'Opening Payment Gateway...')}</span>
               ) : (
                 <>
-                  {paymentMethod === 'Razorpay' ? (
-                    <>
-                      <Zap className="w-5 h-5 fill-current text-amber-200" />
-                      <span>{t(`ఇప్పుడు చెల్లించండి (Pay Now — ₹${totalAmount})`, `Pay Now — ₹${totalAmount}`)}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="w-4 h-4" />
-                      <span>{t('ఆర్డర్ నిర్ధారించండి (Place COD Order)', 'Place COD Order')}</span>
-                    </>
-                  )}
+                  <Zap className="w-5 h-5 fill-current text-amber-200" />
+                  <span>{t(`ఇప్పుడు చెల్లించండి (Pay Now — ₹${totalAmount})`, `Pay Now — ₹${totalAmount}`)}</span>
                 </>
               )}
             </button>
