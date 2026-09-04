@@ -68,7 +68,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Wishlist Button */}
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
-        className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-md transition-transform active:scale-90 ${
+        className={`absolute top-3 right-3 z-10 min-w-[44px] min-h-[44px] p-2.5 rounded-full backdrop-blur-md transition-transform active:scale-90 flex items-center justify-center ${
           isLiked ? 'bg-red-50 text-red-500 shadow' : 'bg-white/80 text-gray-400 hover:text-red-500 shadow-sm'
         }`}
         aria-label="Add to Wishlist"
@@ -120,7 +120,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <select
               value={selectedVariantId}
               onChange={(e) => setSelectedVariantId(e.target.value)}
-              className="w-full bg-brand-50 border border-brand-200 text-brand-900 text-xs rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 font-medium"
+              className="w-full min-h-[38px] bg-brand-50 border border-brand-200 text-brand-900 text-xs rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-brand-500 font-medium cursor-pointer"
             >
               {product.variants.map((v) => (
                 <option key={v.id} value={v.id}>
@@ -136,7 +136,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
 
         {/* Pricing & Add Button */}
-        <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+        <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-2">
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-base font-extrabold text-brand-500">₹{activePrice}</span>
@@ -149,7 +149,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={activeStock <= 0}
-            className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow ${
+            className={`min-h-[44px] px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow cursor-pointer ${
               addedAnimation 
                 ? 'bg-emerald-600 text-white'
                 : activeStock <= 0

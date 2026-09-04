@@ -72,30 +72,30 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Main Header Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 overflow-x-hidden">
+        <div className="flex items-center justify-between gap-3 sm:gap-4">
           
           {/* Mobile Menu Toggle & Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-gray-700 hover:text-brand-500 focus:outline-none"
+              className="lg:hidden min-w-[44px] min-h-[44px] p-2.5 text-gray-700 hover:text-brand-500 hover:bg-gray-100 rounded-xl focus:outline-none flex items-center justify-center transition-colors"
               aria-label="Open navigation menu"
             >
               <Menu className="w-6 h-6" />
             </button>
 
-            <Link to="/" className="flex items-center gap-3 group">
+            <Link to="/" className="flex items-center gap-2.5 group">
               <img 
                 src={settings.logoUrl || "/logo.png"} 
                 alt="Ghovedika Logo" 
-                className="w-12 h-12 rounded-full object-cover shadow-md border-2 border-amber-400 group-hover:scale-105 transition-transform" 
+                className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full object-cover shadow-md border-2 border-amber-400 group-hover:scale-105 transition-transform" 
               />
-              <div className="flex flex-col">
+              <div className="flex flex-col justify-center">
                 <span className="text-xl sm:text-2xl font-extrabold text-brand-500 tracking-tight font-telugu leading-none">
                   గోవేదిక
                 </span>
-                <span className="text-[10px] font-bold tracking-widest text-brand-earth uppercase leading-tight">
+                <span className="text-[10px] sm:text-[11px] font-bold tracking-widest text-brand-earth uppercase leading-tight">
                   GHOVEDIKA
                 </span>
               </div>

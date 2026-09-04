@@ -80,7 +80,7 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-16 pb-16">
+    <div className="space-y-16 pb-16 overflow-x-hidden">
       
       {/* 1. HERO SECTION */}
       <section id="hero" className="relative overflow-hidden bg-brand-900 text-white min-h-[450px] lg:min-h-[540px] flex items-center">
@@ -200,10 +200,10 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* Client-Side Category Chips */}
-        <div id="categories" className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none scroll-mt-24">
+        <div id="categories" className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-none scroll-mt-24">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap cursor-pointer ${
+            className={`min-h-[44px] px-5 py-2.5 text-xs font-bold rounded-full transition whitespace-nowrap flex items-center justify-center cursor-pointer ${
               selectedCategory === 'all'
                 ? 'bg-brand-500 text-white shadow-md'
                 : 'bg-white border border-gray-200 text-gray-700 hover:border-brand-300'
@@ -221,14 +221,14 @@ export const HomePage: React.FC = () => {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                className={`min-h-[44px] px-5 py-2.5 text-xs font-bold rounded-full transition whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   isSelected
                     ? 'bg-brand-500 text-white shadow-md'
                     : 'bg-white border border-gray-200 text-gray-700 hover:border-brand-300'
                 }`}
               >
                 <span className="font-telugu">{catName}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
                   {count}
                 </span>
               </button>

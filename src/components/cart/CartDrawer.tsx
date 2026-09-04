@@ -32,6 +32,18 @@ export const CartDrawer: React.FC = () => {
 
   const freeShippingProgress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
 
+  const handleContinueShopping = () => {
+    setIsCartOpen(false);
+    if (window.location.pathname === '/') {
+      const elem = document.getElementById('products');
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      navigate('/#products');
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
@@ -244,14 +256,24 @@ export const CartDrawer: React.FC = () => {
                 </div>
               </div>
 
-              {/* Checkout CTA */}
-              <button
-                onClick={handleCheckout}
-                className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all transform hover:-translate-y-0.5"
-              >
-                <span>{t('ఆర్డర్ పూర్తి చేయండి', 'Proceed to Checkout')}</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
+              {/* Dual-Action Cart CTAs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <button
+                  onClick={handleContinueShopping}
+                  className="w-full min-h-[44px] py-3 px-4 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <ShoppingBag className="w-4 h-4 text-brand-earth" />
+                  <span>{t('మరిన్ని ఉత్పత్తులు చూడండి', 'Continue Shopping')}</span>
+                </button>
+
+                <button
+                  onClick={handleCheckout}
+                  className="w-full min-h-[44px] py-3 px-4 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all transform active:scale-95 cursor-pointer"
+                >
+                  <span>{t('ఆర్డర్ పూర్తి చేయండి', 'Proceed to Checkout')}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
         </div>

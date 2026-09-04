@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Star, Heart, ShoppingBag, Truck, ShieldCheck, CheckCircle2, 
@@ -33,6 +33,17 @@ export const ProductDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'benefits' | 'usage' | 'specs' | 'faqs'>('benefits');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  // Context-Aware Auto-Scroll when product slug changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setSelectedImageIndex(0);
+    setQuantity(1);
+    if (product?.variants && product.variants.length > 0) {
+      const def = product.variants.find(v => v.isDefault);
+      setSelectedVariantId(def ? def.id : product.variants[0].id);
+    }
+  }, [slug, product?.id]);
 
   if (!product) {
     return (
@@ -218,7 +229,7 @@ export const ProductDetailPage: React.FC = () => {
                       <button
                         key={v.id}
                         onClick={() => setSelectedVariantId(v.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold border transition ${
+                        className={`min-h-[44px] px-4 py-2.5 rounded-xl text-xs font-bold border transition flex items-center justify-center ${
                           isSelected
                             ? 'bg-brand-500 text-white border-brand-500 shadow-md'
                             : 'bg-white text-gray-700 border-gray-300 hover:border-brand-500'
@@ -238,10 +249,11 @@ export const ProductDetailPage: React.FC = () => {
                 {t('సంఖ్య', 'Quantity')}
               </label>
               <div className="flex items-center gap-3">
-                <div className="flex items-center border border-gray-300 rounded-xl bg-gray-50">
+                <div className="flex items-center border border-gray-300 rounded-xl bg-gray-50 overflow-hidden">
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="px-3 py-2 text-gray-600 hover:bg-gray-200 rounded-l-xl font-bold"
+                    className="min-w-[44px] min-h-[44px] px-3 py-2 text-gray-600 hover:bg-gray-200 font-bold flex items-center justify-center transition-colors"
+                    aria-label="Decrease quantity"
                   >
                     -
                   </button>
@@ -249,7 +261,8 @@ export const ProductDetailPage: React.FC = () => {
                   <button
                     onClick={() => setQuantity(q => Math.min(activeStock, q + 1))}
                     disabled={quantity >= activeStock}
-                    className="px-3 py-2 text-gray-600 hover:bg-gray-200 rounded-r-xl font-bold disabled:opacity-30"
+                    className="min-w-[44px] min-h-[44px] px-3 py-2 text-gray-600 hover:bg-gray-200 font-bold disabled:opacity-30 flex items-center justify-center transition-colors"
+                    aria-label="Increase quantity"
                   >
                     +
                   </button>
