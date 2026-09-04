@@ -32,6 +32,16 @@ export const Header: React.FC = () => {
     }
   };
 
+  const handleNavClick = (e: React.MouseEvent, targetId: string) => {
+    if (window.location.pathname === '/') {
+      e.preventDefault();
+      const elem = document.getElementById(targetId);
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-brand-100 shadow-sm">
       {/* Announcement Bar */}
@@ -94,22 +104,22 @@ export const Header: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-700">
-            <Link to="/" className="hover:text-brand-500 transition-colors">
+            <Link to="/#hero" onClick={(e) => handleNavClick(e, 'hero')} className="hover:text-brand-500 transition-colors">
               {t('హోమ్', 'Home')}
             </Link>
-            <Link to="/shop" className="hover:text-brand-500 transition-colors">
+            <Link to="/#products" onClick={(e) => handleNavClick(e, 'products')} className="hover:text-brand-500 transition-colors">
               {t('షాప్', 'Shop')}
             </Link>
-            <Link to="/categories" className="hover:text-brand-500 transition-colors">
+            <Link to="/#categories" onClick={(e) => handleNavClick(e, 'categories')} className="hover:text-brand-500 transition-colors">
               {t('కేటగిరీలు', 'Categories')}
             </Link>
-            <Link to="/about" className="hover:text-brand-500 transition-colors">
+            <Link to="/#about" onClick={(e) => handleNavClick(e, 'about')} className="hover:text-brand-500 transition-colors">
               {t('మా గురించి', 'About')}
             </Link>
-            <Link to="/store-locations" className="hover:text-brand-500 transition-colors">
+            <Link to="/#stores" onClick={(e) => handleNavClick(e, 'stores')} className="hover:text-brand-500 transition-colors">
               {t('స్టోర్ స్థలాలు', 'Stores')}
             </Link>
-            <Link to="/contact" className="hover:text-brand-500 transition-colors">
+            <Link to="/#contact" onClick={(e) => handleNavClick(e, 'contact')} className="hover:text-brand-500 transition-colors">
               {t('సంప్రదించండి', 'Contact')}
             </Link>
           </nav>
@@ -215,18 +225,21 @@ export const Header: React.FC = () => {
 
             <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
               {[
-                { to: '/', label: t('హోమ్', 'Home') },
-                { to: '/shop', label: t('షాప్', 'Shop') },
-                { to: '/categories', label: t('కేటగిరీలు', 'Categories') },
-                { to: '/about', label: t('మా గురించి', 'About') },
-                { to: '/store-locations', label: t('స్టోర్ స్థలాలు', 'Stores') },
-                { to: '/account', label: t('నా అకౌంట్', 'My Account') },
-                { to: '/contact', label: t('సంప్రదించండి', 'Contact Us') },
+                { to: '/#hero', id: 'hero', label: t('హోమ్', 'Home') },
+                { to: '/#products', id: 'products', label: t('షాప్', 'Shop') },
+                { to: '/#categories', id: 'categories', label: t('కేటగిరీలు', 'Categories') },
+                { to: '/#about', id: 'about', label: t('మా గురించి', 'About') },
+                { to: '/#stores', id: 'stores', label: t('స్టోర్ స్థలాలు', 'Stores') },
+                { to: '/account', id: '', label: t('నా అకౌంట్', 'My Account') },
+                { to: '/#contact', id: 'contact', label: t('సంప్రదించండి', 'Contact Us') },
               ].map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    if (link.id) handleNavClick(e, link.id);
+                  }}
                   className="flex items-center justify-between p-3 rounded-xl hover:bg-brand-100 font-medium text-gray-800 text-sm transition"
                 >
                   <span>{link.label}</span>

@@ -312,6 +312,12 @@ export const dbService = {
     dbService.recordCustomerOrder(newOrder);
     dbService.recordConsent(newOrder.customerPhone || newOrder.customerEmail, 'essential_order_fulfillment', true, '/checkout', 'te');
 
+    // Trigger non-blocking transactional email receipt & admin notification
+    import('./emailService').then(({ emailService }) => {
+      emailService.sendCustomerOrderReceipt(newOrder).catch(console.warn);
+      emailService.sendAdminOrderAlert(newOrder).catch(console.warn);
+    }).catch(console.warn);
+
     return newOrder;
   },
   updateOrderStatus: (orderId: string, status: Order['orderStatus'], trackingNumber?: string, internalNotes?: string): Order | null => {
