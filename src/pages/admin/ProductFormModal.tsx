@@ -84,6 +84,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ product, onC
     }));
   };
 
+  const handleUpdateVariantPrice = (id: string, field: 'price' | 'mrp' | 'stock', val: number) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: (prev.variants || []).map(v => v.id === id ? { ...v, [field]: val } : v)
+    }));
+  };
+
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name_en || !formData.name_te) {
@@ -93,8 +100,20 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ product, onC
 
     const slug = formData.slug || formData.name_en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
+    // Synchronize variant prices if product has 1 variant or if main price was updated
+    let updatedVariants = formData.variants || [];
+    if (updatedVariants.length === 1) {
+      updatedVariants = updatedVariants.map(v => ({
+        ...v,
+        price: Number(formData.price) || v.price,
+        mrp: Number(formData.mrp) || v.mrp,
+        stock: Number(formData.stock) || v.stock,
+      }));
+    }
+
     const finalProduct: Product = {
       ...(formData as Product),
+      variants: updatedVariants,
       slug,
       updatedAt: new Date().toISOString(),
     };
@@ -356,18 +375,44 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ product, onC
                 ) : (
                   <div className="divide-y divide-gray-100 border rounded-xl overflow-hidden text-xs">
                     {formData.variants.map((v) => (
-                      <div key={v.id} className="p-3 bg-white flex justify-between items-center">
+                      <div key={v.id} className="p-3 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
-                          <strong className="text-gray-900 block">{v.name_en} ({v.weightUnit})</strong>
+                          <strong className="text-gray-900 block font-bold">{v.name_en} ({v.weightUnit})</strong>
                           <span className="text-gray-400 text-[10px]">SKU: {v.sku}</span>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <span className="font-bold text-brand-500">₹{v.price} (MRP: ₹{v.mrp})</span>
-                          <span className="bg-gray-100 px-2 py-0.5 rounded font-semibold">{v.stock} left</span>
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <label className="text-[9px] text-gray-500 block font-bold">Price (₹)</label>
+                            <input
+                              type="number"
+                              value={v.price}
+                              onChange={(e) => handleUpdateVariantPrice(v.id, 'price', Number(e.target.value))}
+                              className="w-16 px-2 py-1 text-xs border rounded font-bold text-brand-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] text-gray-500 block font-bold">MRP (₹)</label>
+                            <input
+                              type="number"
+                              value={v.mrp}
+                              onChange={(e) => handleUpdateVariantPrice(v.id, 'mrp', Number(e.target.value))}
+                              className="w-16 px-2 py-1 text-xs border rounded text-gray-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] text-gray-500 block font-bold">Stock</label>
+                            <input
+                              type="number"
+                              value={v.stock}
+                              onChange={(e) => handleUpdateVariantPrice(v.id, 'stock', Number(e.target.value))}
+                              className="w-16 px-2 py-1 text-xs border rounded font-semibold"
+                            />
+                          </div>
                           <button
                             type="button"
                             onClick={() => handleRemoveVariant(v.id)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-red-500 hover:text-red-700 ml-2 p-1"
+                            title="Delete Variant"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
