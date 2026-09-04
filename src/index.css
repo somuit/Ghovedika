@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Poppins', 'Anek Telugu', system-ui, sans-serif;
+  }
+  
+  body {
+    background-color: #FAF6EE;
+    color: #1C241E;
+    overflow-x: hidden;
+  }
+
+  /* Telugu specific styling overrides */
+  .lang-te, .font-telugu {
+    font-family: 'Anek Telugu', sans-serif !important;
+    font-weight: 400 !important;
+    line-height: 1.6;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF6EE;
+}
+::-webkit-scrollbar-thumb {
+  background: #9CBDA0;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1E4D2B;
+}
+
+/* Subtle Glassmorphism Card Style */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 77, 43, 0.1);
+}
+
+/* Print Invoice styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-invoice, #printable-invoice * {
+    visibility: visible;
+  }
+  #printable-invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "short_name": "Ghovedika",
+  "name": "Ghovedika | గోవేదిక - Natural Cow Products",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FAF6EE",
+  "theme_color": "#1E4D2B",
+  "display": "standalone",
+  "orientation": "portrait"
+}
