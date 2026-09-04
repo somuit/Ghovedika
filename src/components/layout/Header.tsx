@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Search, ShoppingBag, Heart, User, Globe, Menu, X, Phone, 
-  MapPin, ShieldCheck, ChevronRight, Lock 
+  Search, ShoppingBag, Heart, User, Globe, Phone, MapPin 
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCart } from '../../context/CartContext';
@@ -19,16 +18,13 @@ export const Header: React.FC = () => {
   useLiveDatabase(); // Real-time logo, contact number & category menu updates
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const settings = dbService.getSettings();
-
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
-      setMobileMenuOpen(false);
     }
   };
 
@@ -128,7 +124,7 @@ export const Header: React.FC = () => {
             </form>
           </div>
 
-          {/* Right Action Icons & Mobile Menu Button on Right */}
+          {/* Right Action Icons */}
           <div className="flex items-center gap-1.5 sm:gap-3">
             {/* Language Switcher */}
             <button
@@ -168,105 +164,17 @@ export const Header: React.FC = () => {
               )}
             </button>
 
-            {/* User Account - Desktop */}
+            {/* User Account */}
             <Link
               to="/account"
-              className="hidden sm:block p-2 text-gray-600 hover:text-brand-500 transition-colors"
+              className="p-2 text-gray-600 hover:text-brand-500 transition-colors"
               title="Customer Account"
             >
               <User className="w-5 h-5" />
             </Link>
-
-            {/* Mobile Menu Toggle Button - Positioned Prominently on Right Side */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 min-w-[44px] min-h-[44px] text-gray-800 hover:text-brand-500 hover:bg-gray-100 rounded-xl flex items-center justify-center transition-colors"
-              aria-label="Open Mobile Navigation Menu"
-            >
-              <Menu className="w-6 h-6 stroke-[2.5]" />
-            </button>
           </div>
         </div>
       </div>
-
-      {/* Mobile Drawer Menu - Opens cleanly from the RIGHT Side */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Dark Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-
-          {/* Right-Aligned Drawer Content Container */}
-          <div className="fixed inset-y-0 right-0 w-[85%] max-w-xs bg-white shadow-2xl flex flex-col z-50 overflow-hidden border-l border-gray-200">
-            
-            {/* Drawer Header */}
-            <div className="p-4 bg-brand-500 text-white flex items-center justify-between shadow-md">
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-bold font-telugu">గోవేదిక</span>
-                <span className="text-[10px] font-bold tracking-widest text-amber-300 uppercase">MENU</span>
-              </div>
-              <button 
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1.5 hover:bg-white/10 rounded-full text-white transition"
-                aria-label="Close Menu"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Search Bar inside Drawer */}
-            <div className="p-4 bg-gray-50 border-b border-gray-200">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <input
-                  type="text"
-                  placeholder={t('ఉత్పత్తుల శోధన...', 'Search products...')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-xs bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-brand-500 shadow-sm"
-                />
-                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              </form>
-            </div>
-
-            {/* Complete Web Navigation Options List */}
-            <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto divide-y divide-gray-100">
-              {[
-                { to: '/#hero', id: 'hero', label: t('హోమ్', 'Home') },
-                { to: '/#products', id: 'products', label: t('షాప్ (ఉత్పత్తులు)', 'Shop Catalog') },
-                { to: '/#categories', id: 'categories', label: t('కేటగిరీలు', 'Categories') },
-                { to: '/#about', id: 'about', label: t('మా గురించి (About Us)', 'About Us') },
-                { to: '/#stores', id: 'stores', label: t('స్టోర్ స్థలాలు (Stores)', 'Store Locations') },
-                { to: '/#contact', id: 'contact', label: t('సంప్రదించండి (Contact)', 'Contact Us') },
-                { to: '/account', id: '', label: t('నా అకౌంట్ (My Account)', 'My Account') },
-                { to: '/order-tracking', id: '', label: t('ఆర్డర్ ట్రాక్ చేయండి', 'Track Order Status') },
-              ].map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={(e) => {
-                    setMobileMenuOpen(false);
-                    if (link.id) handleNavClick(e, link.id);
-                  }}
-                  className="flex items-center justify-between p-3.5 rounded-xl hover:bg-brand-50 text-gray-900 font-semibold text-xs transition"
-                >
-                  <span className="font-telugu">{link.label}</span>
-                  <ChevronRight className="w-4 h-4 text-brand-500" />
-                </Link>
-              ))}
-            </nav>
-
-            {/* Footer Contact Details inside Mobile Menu */}
-            <div className="p-4 border-t border-gray-200 bg-brand-50/50 space-y-2">
-              <p className="text-xs text-gray-600 font-bold">{t('సంప్రదించాల్సిన నంబర్లు', 'Helpline Numbers')}:</p>
-              <p className="text-xs font-extrabold text-brand-500">{settings.primaryPhone} / {settings.secondaryPhone}</p>
-              <p className="text-[11px] text-gray-500 font-medium">{settings.email}</p>
-            </div>
-
-          </div>
-        </div>
-      )}
     </header>
   );
 };
