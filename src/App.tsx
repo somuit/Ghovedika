@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -81,6 +81,10 @@ const AppLayout: React.FC = () => {
           <Route path="/terms-and-conditions" element={<CMSPage slugOverride="terms-and-conditions" />} />
           <Route path="/shipping-policy" element={<CMSPage slugOverride="shipping-policy" />} />
           <Route path="/cancellation-returns" element={<CMSPage slugOverride="cancellation-returns" />} />
+
+          {/* Legacy / Unknown Reception Route Redirect */}
+          <Route path="/reception" element={<Navigate to="/admin" replace />} />
+          <Route path="/admin/reception" element={<Navigate to="/admin" replace />} />
 
           {/* Admin Master Control Center Routes */}
           <Route path="/admin" element={<AdminLayout />}>
