@@ -93,6 +93,7 @@ const deleteFromCloudBackend = (collectionName: string, id: string) => {
 
 // Initialize Real-Time Cloud Firestore Listeners
 let isRealtimeSyncStarted = false;
+let isAutoSeedingStarted = false;
 
 export const initRealtimeDatabaseSync = () => {
   if (isRealtimeSyncStarted || !isFirebaseConfigured()) return;
@@ -101,68 +102,87 @@ export const initRealtimeDatabaseSync = () => {
   try {
     // 1. Live Products from Firebase Cloud
     onSnapshot(collection(db, 'products'), (snapshot) => {
-      const prods: Product[] = [];
-      snapshot.forEach((docSnap) => prods.push(docSnap.data() as Product));
-      cloudStore.products = prods;
-      notifyDatabaseUpdate();
+      if (!snapshot.empty) {
+        const prods: Product[] = [];
+        snapshot.forEach((docSnap) => prods.push(docSnap.data() as Product));
+        cloudStore.products = prods;
+        notifyDatabaseUpdate();
+      } else if (!isAutoSeedingStarted) {
+        isAutoSeedingStarted = true;
+        seedFirestoreDatabase().catch(console.warn);
+      }
     }, (err) => console.warn('Cloud Products listener notice:', err));
 
     // 2. Live Categories from Firebase Cloud
     onSnapshot(collection(db, 'categories'), (snapshot) => {
-      const cats: Category[] = [];
-      snapshot.forEach((docSnap) => cats.push(docSnap.data() as Category));
-      cloudStore.categories = cats;
-      notifyDatabaseUpdate();
+      if (!snapshot.empty) {
+        const cats: Category[] = [];
+        snapshot.forEach((docSnap) => cats.push(docSnap.data() as Category));
+        cloudStore.categories = cats;
+        notifyDatabaseUpdate();
+      }
     }, (err) => console.warn('Cloud Categories listener notice:', err));
 
     // 3. Live Banners from Firebase Cloud
     onSnapshot(collection(db, 'banners'), (snapshot) => {
-      const bans: Banner[] = [];
-      snapshot.forEach((docSnap) => bans.push(docSnap.data() as Banner));
-      cloudStore.banners = bans;
-      notifyDatabaseUpdate();
+      if (!snapshot.empty) {
+        const bans: Banner[] = [];
+        snapshot.forEach((docSnap) => bans.push(docSnap.data() as Banner));
+        cloudStore.banners = bans;
+        notifyDatabaseUpdate();
+      }
     }, (err) => console.warn('Cloud Banners listener notice:', err));
 
     // 4. Live Settings from Firebase Cloud
     onSnapshot(collection(db, 'settings'), (snapshot) => {
-      snapshot.forEach((docSnap) => {
-        if (docSnap.id === 'site_config') {
-          cloudStore.settings = docSnap.data() as SiteSettings;
-          notifyDatabaseUpdate();
-        }
-      });
+      if (!snapshot.empty) {
+        snapshot.forEach((docSnap) => {
+          if (docSnap.id === 'site_config') {
+            cloudStore.settings = docSnap.data() as SiteSettings;
+            notifyDatabaseUpdate();
+          }
+        });
+      }
     }, (err) => console.warn('Cloud Settings listener notice:', err));
 
     // 5. Live Pages from Firebase Cloud
     onSnapshot(collection(db, 'pages'), (snapshot) => {
-      const pgs: CMSPage[] = [];
-      snapshot.forEach((docSnap) => pgs.push(docSnap.data() as CMSPage));
-      cloudStore.pages = pgs;
-      notifyDatabaseUpdate();
+      if (!snapshot.empty) {
+        const pgs: CMSPage[] = [];
+        snapshot.forEach((docSnap) => pgs.push(docSnap.data() as CMSPage));
+        cloudStore.pages = pgs;
+        notifyDatabaseUpdate();
+      }
     }, (err) => console.warn('Cloud Pages listener notice:', err));
 
     // 6. Live Coupons from Firebase Cloud
     onSnapshot(collection(db, 'coupons'), (snapshot) => {
-      const cpns: Coupon[] = [];
-      snapshot.forEach((docSnap) => cpns.push(docSnap.data() as Coupon));
-      cloudStore.coupons = cpns;
-      notifyDatabaseUpdate();
+      if (!snapshot.empty) {
+        const cpns: Coupon[] = [];
+        snapshot.forEach((docSnap) => cpns.push(docSnap.data() as Coupon));
+        cloudStore.coupons = cpns;
+        notifyDatabaseUpdate();
+      }
     }, (err) => console.warn('Cloud Coupons listener notice:', err));
 
     // 7. Live FAQs from Firebase Cloud
     onSnapshot(collection(db, 'faqs'), (snapshot) => {
-      const faqs: GeneralFAQ[] = [];
-      snapshot.forEach((docSnap) => faqs.push(docSnap.data() as GeneralFAQ));
-      cloudStore.faqs = faqs;
-      notifyDatabaseUpdate();
+      if (!snapshot.empty) {
+        const faqs: GeneralFAQ[] = [];
+        snapshot.forEach((docSnap) => faqs.push(docSnap.data() as GeneralFAQ));
+        cloudStore.faqs = faqs;
+        notifyDatabaseUpdate();
+      }
     }, (err) => console.warn('Cloud FAQs listener notice:', err));
 
     // 8. Live Orders from Firebase Cloud
     onSnapshot(collection(db, 'orders'), (snapshot) => {
-      const ords: Order[] = [];
-      snapshot.forEach((docSnap) => ords.push(docSnap.data() as Order));
-      cloudStore.orders = ords;
-      notifyDatabaseUpdate();
+      if (!snapshot.empty) {
+        const ords: Order[] = [];
+        snapshot.forEach((docSnap) => ords.push(docSnap.data() as Order));
+        cloudStore.orders = ords;
+        notifyDatabaseUpdate();
+      }
     }, (err) => console.warn('Cloud Orders listener notice:', err));
 
   } catch (syncError) {
